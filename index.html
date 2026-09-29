@@ -14,13 +14,16 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <link rel="stylesheet" href="style.css">
+  <!-- 锁屏壁纸提前预加载，保证首屏直接就是锁屏壁纸，不露底色 -->
+  <link rel="preload" as="image" href="https://cdn.jsdelivr.net/gh/rom-ui/tupiandonut-assets@main/icons/IMG_20260929_232427.png">
+  <!-- 主页壁纸提前预加载，解锁瞬间直接显示，不露底色 -->
+  <link rel="preload" as="image" href="https://cdn.jsdelivr.net/gh/rom-ui/tupiandonut-assets@main/icons/bizhibeijtu.png">
+
+  <link rel="stylesheet" href="style.css?v=20260930i">
 </head>
 <body>
   <div class="stage">
     <div class="phone">
-      <div class="dynamic-island"></div>
-
       <div class="screen">
         <!-- 状态栏 -->
         <div class="status-bar">
@@ -46,52 +49,270 @@
           </span>
         </div>
 
-        <!-- 桌面区域 -->
-        <div class="desktop">
-          <div class="app-grid">
-            <button class="app" type="button">
-              <span class="app-icon">
-                <img
-                  src="https://cdn.jsdelivr.net/gh/rom-ui/tupiandonut-assets@main/icons/fengmian.png"
-                  alt="甜甜圈"
-                  onerror="this.style.display='none';"
-                >
-              </span>
-              <span class="app-name">甜甜圈</span>
-            </button>
-            <button class="app" id="settingsEntry" type="button">
-              <span class="app-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-              <span class="app-name">设置</span>
-            </button>
+        <!-- 桌面区域（多页 + 左右滑动） -->
+        <div class="desktop" id="desktop">
+          <div class="pages-viewport">
+            <div class="pages-track" id="pagesTrack"></div>
           </div>
+          <div class="page-dots" id="pageDots"></div>
         </div>
 
-        <!-- 设置占位面板 -->
+        <!-- 设置面板：多标签（桌面 / 美化 / 模块 / API / 锁屏） -->
         <div class="settings-panel" id="settingsPanel" aria-hidden="true">
           <div class="settings-header">
-            <span class="settings-title">设置</span>
+            <div class="settings-header-left">
+              <button class="settings-back" id="settingsBack" type="button" aria-label="返回主页">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span class="settings-title">设置</span>
+            </div>
             <button class="settings-close" id="settingsClose" type="button" aria-label="关闭设置">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
           </div>
+
+          <div class="settings-tabs" id="settingsTabs" role="tablist">
+            <button class="st-tab active" data-tab="api" type="button">API</button>
+            <button class="st-tab" data-tab="desktop" type="button">桌面</button>
+            <button class="st-tab" data-tab="beautify" type="button">美化</button>
+            <button class="st-tab" data-tab="lock" type="button">锁屏</button>
+            <button class="st-tab" data-tab="backup" type="button">备份</button>
+          </div>
+
           <div class="settings-body">
-            <p>设置页占位</p>
-            <p class="settings-sub">后续任务中将在这里补充具体功能</p>
+            <section class="st-pane" data-pane="desktop">
+            <div class="pm-toolbar">
+              <span class="pm-section-title">桌面页面</span>
+              <button class="pm-add" id="addPageBtn" type="button">+ 新建页面</button>
+            </div>
+            <div class="pm-list" id="pageManagerList"></div>
+            <p class="pm-tip">至少保留 1 页；&#9733; 为打开时默认显示的页面</p>
+            </section>
+
+            <section class="st-pane" data-pane="beautify">
+            <span class="pm-section-title">全局美化</span>
+
+            <div class="beautify-item">
+              <div class="bi-head">
+                <span class="bi-label">应用图标</span>
+                <img class="bi-preview" id="iconPreview" alt="图标预览">
+              </div>
+              <div class="bi-row">
+                <input class="bi-url" id="iconUrlInput" type="text" placeholder="粘贴图片 URL 后点“使用”">
+                <button class="bi-btn" id="iconUrlApply" type="button">使用</button>
+              </div>
+              <div class="bi-row">
+                <button class="bi-btn bi-upload" id="iconUploadBtn" type="button">上传本地图片</button>
+                <button class="bi-btn bi-reset" id="iconResetBtn" type="button">恢复默认</button>
+              </div>
+              <input type="file" id="iconFile" accept="image/*" hidden>
+            </div>
+
+            <div class="beautify-item">
+              <div class="bi-head">
+                <span class="bi-label">锁屏壁纸</span>
+                <img class="bi-preview wide" id="lockWallpaperPreview" alt="锁屏壁纸预览">
+              </div>
+              <div class="bi-row">
+                <input class="bi-url" id="lockWallpaperUrlInput" type="text" placeholder="粘贴图片 URL 后点“使用”">
+                <button class="bi-btn" id="lockWallpaperUrlApply" type="button">使用</button>
+              </div>
+              <div class="bi-row">
+                <button class="bi-btn bi-upload" id="lockWallpaperUploadBtn" type="button">上传本地图片</button>
+                <button class="bi-btn bi-reset" id="lockWallpaperResetBtn" type="button">恢复默认</button>
+              </div>
+              <input type="file" id="lockWallpaperFile" accept="image/*" hidden>
+            </div>
+
+            <div class="beautify-item">
+              <div class="bi-head">
+                <span class="bi-label">主页壁纸</span>
+                <img class="bi-preview wide" id="homeWallpaperPreview" alt="主页壁纸预览">
+              </div>
+              <div class="bi-row">
+                <input class="bi-url" id="homeWallpaperUrlInput" type="text" placeholder="粘贴图片 URL 后点“使用”">
+                <button class="bi-btn" id="homeWallpaperUrlApply" type="button">使用</button>
+              </div>
+              <div class="bi-row">
+                <button class="bi-btn bi-upload" id="homeWallpaperUploadBtn" type="button">上传本地图片</button>
+                <button class="bi-btn bi-reset" id="homeWallpaperResetBtn" type="button">恢复默认</button>
+              </div>
+              <input type="file" id="homeWallpaperFile" accept="image/*" hidden>
+            </div>
+
+            <p class="bi-warn" id="themeWarn"></p>
+
+            <div class="settings-divider"></div>
+
+            <span class="pm-section-title">字体与颜色</span>
+            <div class="setting-row">
+              <span class="setting-label">字体选择</span>
+              <select class="font-select" id="fontSelect"></select>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">添加字体</span>
+              <button class="setting-action" id="fontUploadBtn" type="button">上传 ttf / otf / woff</button>
+              <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,application/font-*" hidden>
+            </div>
+            <div class="api-row">
+              <label for="remoteFontUrl">远程字体 CSS 地址（@import）</label>
+              <input id="remoteFontUrl" type="text" placeholder="https://fontsapi.zeoseven.com/802/main/result.css">
+            </div>
+            <div class="api-row">
+              <label for="remoteFontFamily">字体名称（font-family）</label>
+              <input id="remoteFontFamily" type="text" placeholder="YShi-Written">
+            </div>
+            <div class="api-actions">
+              <button class="pm-add" id="remoteFontApply" type="button">应用远程字体</button>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">字体颜色</span>
+              <input class="color-picker" id="fontColorPicker" type="color" value="#000000">
+              <button class="setting-action" id="fontColorReset" type="button">恢复黑色</button>
+            </div>
+            </section>
+
+            <section class="st-pane active" data-pane="api">
+            <span class="pm-section-title">接口配置</span>
+            <div class="api-row">
+              <label for="apiBaseUrl">API 地址</label>
+              <input id="apiBaseUrl" type="text" placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="api-row">
+              <label for="apiKey">API Key</label>
+              <input id="apiKey" type="password" placeholder="sk-...">
+            </div>
+            <div class="api-row">
+              <label for="apiModel">模型</label>
+              <input id="apiModel" type="text" placeholder="gpt-4o-mini" list="apiModelDatalist">
+              <datalist id="apiModelDatalist"></datalist>
+            </div>
+            <div class="api-actions">
+              <button class="pm-add" id="apiPullModels" type="button">拉取模型</button>
+              <button class="pm-add" id="apiSave" type="button">保存</button>
+              <button class="pm-add" id="apiTest" type="button">测试连接</button>
+            </div>
+            <p class="api-status" id="apiStatus"></p>
+            </section>
+
+            <section class="st-pane" data-pane="lock">
+            <span class="pm-section-title">锁屏与安全</span>
+            <div class="setting-row">
+              <span class="setting-label">启用锁屏</span>
+              <label class="switch">
+                <input type="checkbox" id="lockEnabledToggle">
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">锁屏密码</span>
+              <button class="setting-action" id="managePasswordBtn" type="button">设置密码</button>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">通知预览</span>
+              <label class="switch">
+                <input type="checkbox" id="notificationToggle" checked>
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <button class="lock-now-btn" id="lockNowBtn" type="button">立即锁屏</button>
+            </section>
+
+            <section class="st-pane" data-pane="backup">
+            <span class="pm-section-title">数据备份</span>
+            <div class="api-actions">
+              <button class="pm-add" id="backupCreate" type="button">立即备份</button>
+              <button class="pm-add" id="backupRestore" type="button">恢复备份</button>
+            </div>
+            <div class="api-actions">
+              <button class="pm-add" id="backupExport" type="button">导出配置</button>
+              <label class="pm-add backup-import-label" for="backupImportFile">导入配置</label>
+              <input id="backupImportFile" type="file" accept=".json,application/json" hidden>
+            </div>
+            <p class="api-status" id="backupStatus"></p>
+            </section>
           </div>
         </div>
 
-        <div class="home-indicator"></div>
+        <!-- 聊天 App -->
+        <div class="chat-app" id="chatApp" aria-hidden="true"></div>
+
+        <!-- 锁屏 -->
+        <div class="lock-screen" id="lockScreen" aria-hidden="true">
+          <div class="lock-clock">
+            <div class="lock-time" id="lockTime">--:--</div>
+            <div class="lock-date" id="lockDate"></div>
+          </div>
+
+          <div class="lock-notifications" id="lockNotifications">
+            <div class="lock-notification">
+              <div class="ln-head">
+                <span class="ln-app">甜甜圈</span>
+                <span class="ln-time">现在</span>
+              </div>
+              <p class="ln-text">欢迎使用甜甜圈</p>
+            </div>
+            <div class="lock-notification">
+              <div class="ln-head">
+                <span class="ln-app">设置</span>
+                <span class="ln-time">刚刚</span>
+              </div>
+              <p class="ln-text">你的桌面已准备就绪</p>
+            </div>
+          </div>
+
+          <div class="lock-unlock-area" id="lockUnlockArea">
+            <div class="lock-hint" id="lockHint">上滑或点击以解锁</div>
+            <div class="lock-password" id="lockPasswordPanel">
+              <input
+                type="password"
+                id="lockPasswordInput"
+                maxlength="20"
+                placeholder="输入锁屏密码"
+                autocomplete="off"
+              >
+              <div class="lp-actions">
+                <button class="lp-btn lp-cancel" id="lockPasswordCancel" type="button">取消</button>
+                <button class="lp-btn lp-submit" id="lockPasswordSubmit" type="button">解锁</button>
+              </div>
+              <div class="lp-error" id="lockPasswordError"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设置锁屏密码模态 -->
+        <div class="modal" id="passwordModal" aria-hidden="true">
+          <div class="modal-card">
+            <h3 class="modal-title" id="passwordModalTitle">设置密码</h3>
+            <p class="modal-desc">新密码留空保存即为关闭密码</p>
+            <input type="password" id="newPasswordInput" maxlength="20" placeholder="输入新密码" autocomplete="new-password">
+            <input type="password" id="confirmPasswordInput" maxlength="20" placeholder="再次输入新密码" autocomplete="new-password">
+            <div class="modal-error" id="passwordModalError"></div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-cancel-btn" id="passwordModalCancel" type="button">取消</button>
+              <button class="modal-btn modal-save-btn" id="passwordModalSave" type="button">保存</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+
+  <script src="src/storage.js?v=20260930i"></script>
+  <script src="src/pageManager.js?v=20260930i"></script>
+  <script src="src/theme.js?v=20260930i"></script>
+  <script src="src/desktop.js?v=20260930i"></script>
+  <script src="src/lock.js?v=20260930i"></script>
+  <script src="src/settings.js?v=20260930i"></script>
+  <script src="src/api.js?v=20260930i"></script>
+  <script src="src/chat.js?v=20260930i"></script>
+  <script src="script.js?v=20260930i"></script>
 </body>
 </html>
