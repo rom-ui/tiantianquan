@@ -1,0 +1,247 @@
+/* ===== 基础重置 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: radial-gradient(circle at 50% 25%, #2c3047 0%, #14151d 70%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ===== 舞台与手机外壳 ===== */
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone {
+  position: relative;
+  width: min(320px, 84vw);
+  aspect-ratio: 320 / 650;
+  max-height: 88vh;
+  border-radius: 40px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 40px;
+  overflow: hidden;
+  /* 中性深色背景（无蓝色） */
+  background: linear-gradient(170deg, #2b2c33 0%, #14151a 100%);
+}
+
+/* 灵动岛 */
+.dynamic-island {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 24px;
+  background: #000;
+  border-radius: 14px;
+  z-index: 30;
+}
+
+/* ===== 状态栏 ===== */
+.status-bar {
+  position: relative;
+  z-index: 10;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.status-battery {
+  width: 24px;
+  height: 12px;
+}
+
+/* ===== 桌面区域 ===== */
+.desktop {
+  position: absolute;
+  inset: 46px 0 0;
+}
+
+/* 应用网格 */
+.app-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 12px;
+  padding: 26px 18px 0;
+}
+
+.app {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  font-family: inherit;
+}
+
+.app-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.app-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.app-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.app-name {
+  font-size: 11.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+
+.app:hover .app-icon {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.app:active .app-icon {
+  transform: scale(0.92);
+}
+
+/* ===== 设置占位面板 ===== */
+.settings-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(18, 20, 28, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s ease;
+}
+
+.settings-panel.open {
+  transform: translateY(0);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.settings-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.settings-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.settings-body p {
+  font-size: 15px;
+}
+
+.settings-body .settings-sub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Home 指示条 */
+.home-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+}
